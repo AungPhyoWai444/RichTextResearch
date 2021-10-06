@@ -1,15 +1,12 @@
 var Delta = Quill.import('delta');
 var quill = new Quill('#editor-container', {
   modules: {
-    toolbar: [
-      ['bold', 'italic'],
-      ['link', 'blockquote', 'code-block', 'image'],
-      [{ list: 'ordered' }, { list: 'bullet' }],
-    ]
-  },
+    toolbar: '#toolbar-container' // <------------------Addeb by Khaing for tooltip ------------------->
+   },
   placeholder: 'Compose an epic...',
   theme: 'snow'
 });
+
 
 var form = document.querySelector('form');
 
@@ -90,6 +87,15 @@ function onSave(quill) {
   storage.setItem('noteData', JSON.stringify(quill.getContents()));
 }
 
+ // <------------------Addeb by Khaing for tooltip ------------------->
+$('[data-toggle="tooltip"]').tooltip();
+  
+// Can control programmatically too
+// $('.ql-italic').mouseover();
+// setTimeout(function() {
+//   $('.ql-italic').mouseout();
+// }, 2500);
+ // <------------------Addeb by Khaing for tooltip ------------------->
 // Check for unsaved data
 window.onbeforeunload = function () {
   if (change.length() > 0) {

@@ -1,12 +1,16 @@
 <html>
 
 <head>
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-uWxY/CJNBR+1zjPWmfnSnVxwRheevXITnMqoEIeG1LJrdI0GlVs/9cVSyPYXdcSF" crossorigin="anonymous">
-
+</link>
+        <!-- // Updated by Khaing for tooltip design -->
     <!-- Bootstrap icon-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+     
+    </link>
 
     <!-- Theme included stylesheets -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -16,6 +20,10 @@
 
     <!-- Main Quill library -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+        <!-- // Added by Khaing for tooltip -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>     <!-- // Updated by Khaing for tooltip design -->
 
     <link href="./style.css" rel="stylesheet">
     </link>
@@ -35,9 +43,41 @@
             <div id='noteGroupId' class="row form-group">
                 <label for="about">Note something</label>
                 <input name="about" type="hidden">
+                <!-- // Addeb by Khaing for tooltip -->
+                <div id="toolbar-container">
+                    <button class="ql-bold" data-toggle="tooltip" data-placement="bottom" title="Bold"></button>
+                    <button class="ql-italic" data-toggle="tooltip" data-placement="bottom" title="Italic"></button>
+                    <button class="ql-underline" data-toggle="tooltip" data-placement="bottom" title="Underline"></button>
+                    <button class="ql-strike" data-toggle="tooltip" data-placement="bottom" title="Strike"></button>
+                    <button class="ql-link" data-toggle="tooltip" data-placement="bottom" title="Link"></button>
+                    <button class="ql-image" data-toggle="tooltip" data-placement="bottom" title="Image"></button>
+                    <select class="ql-size" data-toggle="tooltip" data-placement="bottom" title="Text Size">
+                        <option value="small"></option>
+                        <!-- Note a missing, thus falsy value, is used to reset to default -->
+                        <option selected></option>
+                        <option value="large"></option>
+                        <option value="huge"></option>
+                      </select>
+                      <select class="ql-header" data-toggle="tooltip" data-placement="bottom" title="Header">
+                        <option value="1"></option>
+                        <!-- Note a missing, thus falsy value, is used to reset to default -->
+                        <option selected></option>
+                        <option value="2"></option>
+                        <option value="3"></option>
+                      </select>
+                      <button class="ql-list"data-toggle="tooltip" data-placement="bottom" title="List" value="ordered"></button>
+                      <button class="ql-list" data-toggle="tooltip" data-placement="bottom" title="Ordered" value="bullet"></button>
+                      <button class="ql-color" data-toggle="tooltip" data-placement="bottom" title="Text Color" ></button>
+                      <button class="ql-background" data-toggle="tooltip" data-placement="bottom" title="Background Color" ></button>
+                      <button class="ql-blockquote" data-toggle="tooltip" data-placement="bottom" title="Blockquote"></button>
+                      <button class="ql-code-block" data-toggle="tooltip" data-placement="bottom" title="Code-block"></button>
+                      <button class="ql-clean" data-toggle="tooltip" data-placement="bottom" title="Select text to Clear"></button>
+                    </div>
+                  </div>
+                    <!-- // Addeb by Khaing for tooltip -->
                 <div id="editor-container">
-                    <!-- <p>A robot who has developed sentience, and is the only robot of his kind shown to be still
-                        functioning on Earth.</p> -->
+                    <p>A robot who has developed sentience, and is the only robot of his kind shown to be still
+                        functioning on Earth.</p>
                 </div>
             </div>
             <div class="row">
