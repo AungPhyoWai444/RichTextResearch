@@ -1,8 +1,13 @@
 <html>
 
 <head>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-    </link>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-uWxY/CJNBR+1zjPWmfnSnVxwRheevXITnMqoEIeG1LJrdI0GlVs/9cVSyPYXdcSF" crossorigin="anonymous">
+
+    <!-- Bootstrap icon-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
     <!-- Theme included stylesheets -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     </link>
@@ -20,8 +25,15 @@
 <body>
     <div id="form-container" class="container">
         <form>
-            <div class="row form-group">
-                <label for="about">About me</label>
+            <div id='createNoteId' class="row">
+                <button type="button" class="btn btn-outline-success">
+                    <i class="bi bi-plus-circle-fill">
+                        Create Note
+                    </i>
+                </button>
+            </div>
+            <div id='noteGroupId' class="row form-group">
+                <label for="about">Note something</label>
                 <input name="about" type="hidden">
                 <div id="editor-container">
                     <!-- <p>A robot who has developed sentience, and is the only robot of his kind shown to be still
@@ -29,7 +41,10 @@
                 </div>
             </div>
             <div class="row">
-                <button class="btn btn-primary" type="submit">Save Profile</button>
+                <button id='deleteNoteId' class="btn btn-danger" type="button">Delete Note</button>
+            </div>
+            <div class="row">
+                <button id='saveNoteId' class="btn btn-primary" type="submit">Save Note</button>
             </div>
         </form>
     </div>

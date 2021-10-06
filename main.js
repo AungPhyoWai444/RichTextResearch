@@ -19,7 +19,29 @@ var storage = window.localStorage;
 // Set existing data from the storage
 if (storage.getItem('noteData') != null) {
   quill.setContents(JSON.parse(storage.getItem('noteData')));
+  $('#createNoteId').hide();
+} else {
+  $('#noteGroupId').hide();
+  $('#deleteNoteId').hide();
+  $('#saveNoteId').hide();
+
+  $('#createNoteId').show();
 }
+
+// Create note
+$('#createNoteId').click(function () {
+  $('#createNoteId').hide();
+
+  $('#noteGroupId').show();
+  $('#deleteNoteId').show();
+  $('#saveNoteId').show();
+});
+
+// Delete note
+$('#deleteNoteId').click(function () {
+  storage.removeItem('noteData');
+  window.location.reload();
+});
 
 form.onsubmit = function () {
   // Populate hidden form on submit
@@ -29,7 +51,7 @@ form.onsubmit = function () {
   // Save data to storage
   onSave(quill);
 
-  console.log("Submitted", $(form).serialize(), $(form).serializeArray());
+  //console.log("Submitted", $(form).serialize(), $(form).serializeArray());
 
   // No back end to actually submit to!
   alert('Open the console to see the submit data!')
@@ -62,7 +84,7 @@ setInterval(function () {
     onSave(quill);
     change = new Delta();
   }
-}, 5 * 1000);
+}, 2 * 1000);
 
 function onSave(quill) {
   storage.setItem('noteData', JSON.stringify(quill.getContents()));
