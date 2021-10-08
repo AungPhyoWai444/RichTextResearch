@@ -88,7 +88,7 @@ function onSave(quill) {
 }
 
  // <------------------Addeb by Khaing for tooltip ------------------->
-$('[data-toggle="tooltip"]').tooltip();
+//$('[data-toggle="tooltip"]').tooltip();
   
 // Can control programmatically too
 // $('.ql-italic').mouseover();
@@ -102,3 +102,27 @@ window.onbeforeunload = function () {
     return 'There are unsaved changes. Are you sure you want to leave?';
   }
 }
+
+//Drag and Drop
+//selecting all required elements
+var dropArea = document.querySelector(".drag-area");
+let file;
+
+//If U Drag File Over DropArea
+dropArea.addEventListener("dragover", (event)=>{
+  event.preventDefault(); //preventing from default behaviour
+  dropArea.classList.add("active");
+});
+
+//If U leave dragged File from DropArea
+dropArea.addEventListener("dragleave", ()=>{
+  dropArea.classList.remove("active");
+});
+
+//If U drop File on DropArea
+dropArea.addEventListener("drop", (event)=>{
+  event.preventDefault(); //preventing from default behaviour
+  file = event.dataTransfer.files[0];
+  quill.updateContents(new Delta()
+  .insert(file.name));
+});
