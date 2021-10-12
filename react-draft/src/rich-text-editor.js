@@ -1,29 +1,64 @@
 import React from "react";
-import { Editor, EditorState, RichUtils, getDefaultKeyBinding, convertToRaw, convertFromRaw } from 'draft-js';
+import { EditorState, RichUtils, getDefaultKeyBinding, convertToRaw, convertFromRaw } from 'draft-js';
+import Editor from '@draft-js-plugins/editor';
 import './RichEditor.css'
+import createEmojiPlugin from '@draft-js-plugins/emoji';
+import toolbarStyles from './css/toolbarStyles.css';
+
+import '@draft-js-plugins/emoji/lib/plugin.css';
+import createToolbarPlugin from '@draft-js-plugins/static-toolbar';
+//For Inline styles 
+import '@draft-js-plugins/static-toolbar/lib/plugin.css'
+
+  import {
+    ItalicButton,
+    BoldButton,
+    UnderlineButton,
+    CodeButton,
+    HeadlineOneButton,
+    HeadlineTwoButton,
+    HeadlineThreeButton,
+    UnorderedListButton,
+    OrderedListButton,
+    BlockquoteButton,
+    CodeBlockButton,
+    SubButton,
+    SupButton,
+    AlignBlockLeftButton,
+    AlignBlockRightButton,
+    AlignBlockCenterButton,
+    
+  } from '@draft-js-plugins/buttons';
 var oldEditorState;
 var newEditorState;
 var storage = window.localStorage;
+const staticToolbarPlugin = createToolbarPlugin();
+const { Toolbar } = staticToolbarPlugin;
+const emojiPlugin = createEmojiPlugin();
+const { EmojiSuggestions,EmojiSelect } = emojiPlugin;
+const plugins = [staticToolbarPlugin,emojiPlugin];
 
 export default class RichEditorExample extends React.Component {
+    
     constructor(props) {
         super(props);
         //this.state = { showNote: storage.getItem('noteData') != null ? true : false };
 
         const noteData = storage.getItem('noteData');
-
+        console.log( 'noteData:'+noteData);
         if (noteData) {
             this.state = {
                 editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(noteData))),
                 showNote: noteData != null ? true : false
             };
+           
         } else {
             this.state = { editorState: EditorState.createEmpty(), showNote: noteData != null ? true : false };
         }
-
+        console.log('state noteData:'+this.state);
         oldEditorState = newEditorState = this.state.editorState;
 
-        this.focus = () => this.refs.editor.focus();
+        //this.focus = () => this.refs.editor.focus();
         this.onChange = (editorState) => { this.setState({ editorState }); newEditorState = editorState; };
 
         this.handleKeyCommand = this._handleKeyCommand.bind(this);
@@ -97,7 +132,7 @@ export default class RichEditorExample extends React.Component {
 
     render() {
         const { editorState } = this.state;
-
+        console.log('editor state:'+editorState);
         // If the user changes block type before entering any text, we can
         // either style the placeholder or hide it. Let's just hide it now.
         let className = 'RichEditor-editor';
@@ -118,26 +153,65 @@ export default class RichEditorExample extends React.Component {
                 {this.state.showNote &&
                     (
                         <div className="RichEditor-root">
-                            <BlockStyleControls
+                            {/* <BlockStyleControls
                                 editorState={editorState}
                                 onToggle={this.toggleBlockType}
-                            />
-                            <InlineStyleControls
+                            /> */}
+                            {/* <InlineStyleControls
                                 editorState={editorState}
                                 onToggle={this.toggleInlineStyle}
-                            />
-                            <div className={className} onClick={this.focus}>
-                                <Editor
+                            /> */}
+                           
+                            <div className={className}>
+                            {/* <div className={emojiStyles.options}>
+                            <EmojiSelect closeOnEmojiSelect/>
+                            </div> */}
+                            <Toolbar>
+                            {
+              // may be use React.Fragment instead of div to improve perfomance after React 16
+                            (externalProps) => (
+                                <div>
+                                <BoldButton {...externalProps} />
+                                <ItalicButton {...externalProps} />
+                                <UnderlineButton {...externalProps} />
+                                <CodeButton {...externalProps} />
+                                <HeadlineOneButton {...externalProps}/>
+                                <HeadlineTwoButton {...externalProps}/>
+                                <HeadlineThreeButton {...externalProps}/>
+                                <UnorderedListButton {...externalProps} />
+                                <OrderedListButton {...externalProps} />
+                                <BlockquoteButton {...externalProps} />
+                                <SubButton {...externalProps} />
+                                <SupButton {...externalProps} />
+                                <AlignBlockLeftButton {...externalProps} />
+                                <AlignBlockCenterButton {...externalProps} />
+                                <AlignBlockRightButton {...externalProps} />
+                                <CodeBlockButton {...externalProps} />
+                                {/* <EmojiSelect closeOnEmojiSelect className={toolbarStyles.emoji}/> */}
+                                {/* <div className={toolbarStyles.emoji}>
+                                <EmojiSelect closeOnEmojiSelect />
+                                </div> */}
+                               </div>
+                            )
+            }
+                            </Toolbar>
+                           <div>
+                           <Editor
                                     blockStyleFn={getBlockStyle}
                                     customStyleMap={styleMap}
-                                    editorState={editorState}
+                                    editorState={this.state.editorState}
                                     handleKeyCommand={this.handleKeyCommand}
                                     keyBindingFn={this.mapKeyToEditorCommand}
                                     onChange={this.onChange}
                                     placeholder="Tell a story..."
-                                    ref="editor"
+                                    ref={(element) => {
+                                        this.editor = element;
+                                      }}
                                     spellCheck={true}
-                                />
+                                    plugins = {plugins}
+                            /></div>
+                            <EmojiSuggestions />
+                          
                             </div>
                         </div>)}
                 <div>
@@ -243,9 +317,9 @@ const BlockStyleControls = (props) => {
 };
 
 var INLINE_STYLES = [
-    { label: 'Bold', style: 'BOLD' },
-    { label: 'Italic', style: 'ITALIC' },
-    { label: 'Underline', style: 'UNDERLINE' },
+    { label: 'Bold', style: 'BOLD'},
+    { label: 'Italic', style: 'ITALIC'},
+    { label: 'Underline', style: 'UNDERLINE'},
     { label: 'Monospace', style: 'CODE' },
 ];
 
@@ -258,7 +332,7 @@ const InlineStyleControls = (props) => {
                 <StyleButton
                     key={type.label}
                     active={currentStyle.has(type.style)}
-                    label={type.label}
+                    label={type.icon}
                     onToggle={props.onToggle}
                     style={type.style}
                 />
