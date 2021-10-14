@@ -1,9 +1,37 @@
 import React, { Component } from 'react'
 class DragAndDrop extends Component {  
-    state = {
-    drag: false
+// var  SCOPE  =  'https://www.googleapis.com/auth/drive.file';
+// var  discoveryUrl  =  'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+state = {
+   name: '',
+   googleAuth: '',
+   drag: false
   }  
   dropRef = React.createRef()  
+
+initClient = () => {
+    try{
+      window.gapi.client.init({
+          'apiKey': "<YOUR API KEY>",
+          'clientId': "<YOUR CLIENT ID>",
+          'scope': 'https://www.googleapis.com/auth/drive.file',
+          'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+        }).then(() => {
+          this.setState({
+            googleAuth: window.gapi.auth2.getAuthInstance()
+          })
+          this.state.googleAuth.isSignedIn.listen(this.updateSigninStatus);
+
+
+        // document.getElementById('sign
+         document.getElementById('signin-btn');
+         document.getElementById('signout-btn').addEventListener('click', this.signOutFunction);
+
+      });
+    }catch(e){
+      console.log(e);
+    }
+  }
   handleDrag = (e) => {
     e.preventDefault()
     e.stopPropagation()
@@ -34,7 +62,16 @@ class DragAndDrop extends Component {
       this.dragCounter = 0    
     }
   }  
+  handleClientLoad = ()=>{
+    window.gapi.load('client:auth2', this.initClient);
+  }
   componentDidMount() {
+
+    var script = document.createElement('script');
+    script.onload=this.handleClientLoad;
+    script.src="https://apis.google.com/js/api.js";
+
+    document.body.appendChild(script);
     let div = this.dropRef.current
     div.addEventListener('dragenter', this.handleDragIn)
     div.addEventListener('dragleave', this.handleDragOut)
