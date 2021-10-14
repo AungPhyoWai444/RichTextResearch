@@ -1,6 +1,6 @@
 import React from "react";
 import { EditorState, RichUtils, getDefaultKeyBinding, convertToRaw, convertFromRaw } from 'draft-js';
-import Editor from '@draft-js-plugins/editor';
+import Editor, { composeDecorators }from '@draft-js-plugins/editor';
 import './RichEditor.css'
 import createEmojiPlugin from '@draft-js-plugins/emoji';
 import toolbarStyles from './css/toolbarStyles.css';
@@ -29,6 +29,11 @@ import '@draft-js-plugins/static-toolbar/lib/plugin.css'
     AlignBlockCenterButton,
     
   } from '@draft-js-plugins/buttons';
+  // drag N drop
+  import createImagePlugin from '@draft-js-plugins/image';
+
+  import createFocusPlugin from '@draft-js-plugins/focus';  
+  import createBlockDndPlugin from '@draft-js-plugins/drag-n-drop';
 var oldEditorState;
 var newEditorState;
 var storage = window.localStorage;
@@ -36,7 +41,16 @@ const staticToolbarPlugin = createToolbarPlugin();
 const { Toolbar } = staticToolbarPlugin;
 const emojiPlugin = createEmojiPlugin();
 const { EmojiSuggestions,EmojiSelect } = emojiPlugin;
-const plugins = [staticToolbarPlugin,emojiPlugin];
+//drag N Drop
+const focusPlugin = createFocusPlugin();
+const blockDndPlugin = createBlockDndPlugin();
+
+const decorator = composeDecorators(
+    focusPlugin.decorator,
+    blockDndPlugin.decorator
+  );
+  const imagePlugin = createImagePlugin({ decorator });
+const plugins = [staticToolbarPlugin,emojiPlugin,imagePlugin,blockDndPlugin, focusPlugin];
 
 export default class RichEditorExample extends React.Component {
     
