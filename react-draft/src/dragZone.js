@@ -77,7 +77,8 @@ initClient = () => {
     div.addEventListener('dragleave', this.handleDragOut)
     div.addEventListener('dragover', this.handleDrag)
     div.addEventListener('drop', this.handleDrop)
-  }  componentWillUnmount() {
+  }  
+  componentWillUnmount() {
     let div = this.dropRef.current
     div.removeEventListener('dragenter', this.handleDragIn)
     div.removeEventListener('dragleave', this.handleDragOut)

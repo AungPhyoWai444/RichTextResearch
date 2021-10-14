@@ -7,6 +7,7 @@ import toolbarStyles from './css/toolbarStyles.css';
 
 import '@draft-js-plugins/emoji/lib/plugin.css';
 import createToolbarPlugin from '@draft-js-plugins/static-toolbar';
+import GoogleDrive from './googledrive/googledrive.js';
 //For Inline styles 
 import '@draft-js-plugins/static-toolbar/lib/plugin.css'
 
@@ -53,7 +54,11 @@ const decorator = composeDecorators(
 const plugins = [staticToolbarPlugin,emojiPlugin,imagePlugin,blockDndPlugin, focusPlugin];
 
 export default class RichEditorExample extends React.Component {
-    
+    // state = {
+    //     files: [
+    //       'hello.doc'
+    //     ]
+    //   } 
     constructor(props) {
         super(props);
         //this.state = { showNote: storage.getItem('noteData') != null ? true : false };
@@ -63,11 +68,17 @@ export default class RichEditorExample extends React.Component {
         if (noteData) {
             this.state = {
                 editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(noteData))),
-                showNote: noteData != null ? true : false
+                showNote: noteData != null ? true : false,
+                files: [
+                    'hello.doc'
+                  ]
             };
            
         } else {
-            this.state = { editorState: EditorState.createEmpty(), showNote: noteData != null ? true : false };
+            this.state = { editorState: EditorState.createEmpty(), showNote: noteData != null ? true : false,
+                files: [
+                    'hello.doc'
+                  ]};
         }
         console.log('state noteData:'+this.state);
         oldEditorState = newEditorState = this.state.editorState;
@@ -80,7 +91,15 @@ export default class RichEditorExample extends React.Component {
         this.toggleBlockType = this._toggleBlockType.bind(this);
         this.toggleInlineStyle = this._toggleInlineStyle.bind(this);
     }
-
+    handleDrop = (files) => {
+        let fileList = this.state.files
+        for (var i = 0; i < files.length; i++) {
+          if (!files[i].name) return
+          fileList.push(files[i].name)
+          console.log('getting file::::'+files);
+        }
+        this.setState({files: fileList})
+      }
     _handleKeyCommand(command, editorState) {
         const newState = RichUtils.handleKeyCommand(editorState, command);
         if (newState) {
@@ -209,6 +228,8 @@ export default class RichEditorExample extends React.Component {
                             )
             }
                             </Toolbar>
+                            <GoogleDrive handleDrop={this.handleDrop}>
+
                            <div>
                            <Editor
                                     blockStyleFn={getBlockStyle}
@@ -224,6 +245,12 @@ export default class RichEditorExample extends React.Component {
                                     spellCheck={true}
                                     plugins = {plugins}
                             /></div>
+                            <div style={{height: 300, width: 250}}>
+                            {this.state.files.map((file) =>
+                                <div key={file}>{file}</div>
+                            )}
+                            </div>
+                            </GoogleDrive>
                             <EmojiSuggestions />
                           
                             </div>
