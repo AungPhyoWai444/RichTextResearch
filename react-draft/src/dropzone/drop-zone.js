@@ -33,11 +33,11 @@ state = {
     this.setState({drag: false})
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       this.props.handleDrop(e.dataTransfer.files)
-      e.dataTransfer.clearData()
+    //  e.dataTransfer.clearData()
       this.dragCounter = 0    
     }
   }  
-  
+
   handleClientLoad = ()=>{
     window.gapi.load('client:auth2', this.initClient);
   }

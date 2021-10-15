@@ -33,6 +33,7 @@ import '@draft-js-plugins/static-toolbar/lib/plugin.css'
 
   import createFocusPlugin from '@draft-js-plugins/focus';  
   import createBlockDndPlugin from '@draft-js-plugins/drag-n-drop';
+import { file } from "@babel/types";
 var oldEditorState;
 var newEditorState;
 var storage = window.localStorage;
@@ -172,16 +173,22 @@ export default class RichEditorExample extends React.Component {
 
         return (
             <div>
+                  <DropZone handleDrop={this.handleDrop}>   
                 <div>
                     {!this.state.showNote &&
                         <button onClick={() => this.onCreate()}>Create Note</button>}
 
                 </div>
+                
+                        
                 {this.state.showNote &&
                     (
                         <div className="RichEditor-root">  
                             <div className={className}>
-                            <Toolbar>
+                            
+                          
+                           <div>
+                           <Toolbar>
                             {
               // may be use React.Fragment instead of div to improve perfomance after React 16
                             (externalProps) => (
@@ -207,8 +214,6 @@ export default class RichEditorExample extends React.Component {
                             )
             }
                             </Toolbar>
-                           <DropZone handleDrop={this.handleDrop}> 
-                           <div>
                            <Editor
                                     blockStyleFn={getBlockStyle}
                                     customStyleMap={styleMap}
@@ -224,7 +229,7 @@ export default class RichEditorExample extends React.Component {
                                     plugins = {plugins}
                             /></div>
                             
-                             </DropZone>
+                            
                             <EmojiSuggestions />
                           
                             </div>
@@ -233,11 +238,13 @@ export default class RichEditorExample extends React.Component {
                             {this.state.files.map((file) =>
                                 <div key={file}>{file}</div>
                             )}
+                            
                             </div>
                 <div>
                     {this.state.showNote &&
                         (<button onClick={() => this.onDelete()}>Delete Note</button>)}
                 </div>
+                </DropZone>  
             </div>
         );
     }
