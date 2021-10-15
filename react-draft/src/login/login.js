@@ -5,7 +5,6 @@ var discoveryUrl = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 const history = createBrowserHistory()
 
 export default class GoogleDrive extends Component {
-  
   state = {
     name: '',
     googleAuth: '',
@@ -38,7 +37,7 @@ export default class GoogleDrive extends Component {
     }
   }
   signInFunction = async () =>{
-    await this.state.googleAuth.signIn();
+    await this.state.googleAuth.signIn()
     this.updateSigninStatus()
     history.push("/editor")
   }
@@ -58,6 +57,9 @@ export default class GoogleDrive extends Component {
         name: user.Ot,
       });
       
+  } 
+  handleClientLoad = ()=>{
+    window.gapi.load('client:auth2', this.initClient);
   }
  
   render() {

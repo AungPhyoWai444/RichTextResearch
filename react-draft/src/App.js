@@ -6,11 +6,10 @@ import './css/App.css';
 //import GoogleDrive from './googledrive/googledrive.js';
 //import FileList from "./fileList.js"
 
-import Login from "./note-function/login.js"
+import Login from "./login/login.js"
 import RichEditor from "./rich-text-editor";
-import { createBrowserHistory } from 'history' ;
-import { BrowserRouter as Router, Route, Switch, Link} from "react-router-dom";
-const history = createBrowserHistory()
+import { BrowserRouter as Router, Route, Switch,} from "react-router-dom";
+
 function App() {
   return (
     <Router>
