@@ -1,7 +1,11 @@
 import { Upload } from 'antd';
 import React, { Component } from 'react';
+import ListDocuments from '../ListDocuments/index';
+
 var SCOPE = 'https://www.googleapis.com/auth/drive.file';
 var discoveryUrl = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+
+const documents = [];
 
 export default class GoogleDrive extends Component {
   state = {
@@ -55,7 +59,22 @@ export default class GoogleDrive extends Component {
   }
   updateSigninStatus = ()=> {
     this.setSigninStatus();
+    this.listFiles();
   }
+
+  listFiles = async (searchTerm = null) => {
+    window.gapi.client.drive.files
+      .list({
+        pageSize: 50,
+        fields: 'nextPageToken, files(id, name, mimeType, modifiedTime)',
+        q: searchTerm,
+      })
+      .then(function (response) {
+        const res = JSON.parse(response.body);
+        documents = res.files;
+      });
+};
+
   setSigninStatus= async ()=>{
     var user = this.state.googleAuth.currentUser.get().dt;
     this.setState({
@@ -217,6 +236,10 @@ export default class GoogleDrive extends Component {
           </div>
         }
         {this.props.children}
+        <ListDocuments
+                    documents={documents}
+                    onSearch={this.listFiles}
+                />
       </div>
       </div>
     );

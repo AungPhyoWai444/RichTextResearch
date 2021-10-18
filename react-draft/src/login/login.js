@@ -1,74 +1,152 @@
-import React, { Component } from 'react';
-import { createBrowserHistory } from 'history' ;
-var SCOPE = 'https://www.googleapis.com/auth/drive.file';
-var discoveryUrl = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-const history = createBrowserHistory()
+import React, { useState } from 'react';
+import { Row, Col, Spin } from 'antd';
+import styled from 'styled-components';
+import { gapi } from 'gapi-script';
+import GoogleDriveImage from '../images/google-drive.png';
+import ListDocuments from '../ListDocuments';
+import { style } from './style';
 
-export default class GoogleDrive extends Component {
-  state = {
-    name: '',
-    googleAuth: '',
-    body:'',
-  }
-  componentDidMount(){
-    var script = document.createElement('script');
-    script.onload=this.handleClientLoad;
-    script.src="https://apis.google.com/js/api.js";
-    document.body.appendChild(script);
-  
-  }
-  initClient = () => {
-    try{
-      window.gapi.client.init({
-          'apiKey': "AIzaSyDo9MQj6u3Eftj5Acd9QoY_1BieZDRZ0O8",
-          'clientId': "547330562057-i3ohfddt12lrmcq4dsljk6qmmcgt4t90.apps.googleusercontent.com",
-          'scope': SCOPE,
-          'discoveryDocs': [discoveryUrl]
-        }).then(() => {
-          this.setState({
-            googleAuth: window.gapi.auth2.getAuthInstance()
-          })
-          this.state.googleAuth.isSignedIn.listen(this.updateSigninStatus);
-         document.getElementById('signin-btn').addEventListener('click', this.signInFunction);
-         document.getElementById('signout-btn').addEventListener('click', this.signOutFunction);
+// Client ID and API key from the Developer Console
+const CLIENT_ID = "547330562057-i3ohfddt12lrmcq4dsljk6qmmcgt4t90.apps.googleusercontent.com";
+const API_KEY = "AIzaSyDo9MQj6u3Eftj5Acd9QoY_1BieZDRZ0O8";
+
+// Array of API discovery doc URLs for APIs
+const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
+
+// Authorization scopes required by the API; multiple scopes can be
+// included, separated by spaces.
+const SCOPES ='https://www.googleapis.com/auth/drive.metadata.readonly';
+
+const Login = () => {
+  const [listDocumentsVisible, setListDocumentsVisibility] = useState(false);
+  const [documents, setDocuments] = useState([]);
+  const [isLoadingGoogleDriveApi, setIsLoadingGoogleDriveApi] = useState(false);
+  const [isFetchingGoogleDriveFiles, setIsFetchingGoogleDriveFiles] = useState(false);
+  const [signedInUser, setSignedInUser] = useState();
+  const handleChange = (file) => {};
+
+  /**
+   * Print files.
+   */
+  const listFiles = (searchTerm = null) => {
+    setIsFetchingGoogleDriveFiles(true);
+    gapi.client.drive.files
+      .list({
+        pageSize: 50,
+        fields: 'nextPageToken, files(id, name, mimeType, modifiedTime)',
+        q: searchTerm,
+      })
+      .then(function (response) {
+        setIsFetchingGoogleDriveFiles(false);
+        setListDocumentsVisibility(true);
+        const res = JSON.parse(response.body);
+        setDocuments(res.files);
       });
-    }catch(e){
-      console.log(e);
+  };
+
+  /**
+   *  Sign in the user upon button click.
+   */
+  const handleAuthClick = (event) => {
+    gapi.auth2.getAuthInstance().signIn();
+  };
+
+  /**
+   *  Called when the signed in status changes, to update the UI
+   *  appropriately. After a sign-in, the API is called.
+   */
+  const updateSigninStatus = (isSignedIn) => {
+    if (isSignedIn) {
+      // Set the signed in user
+      setSignedInUser(gapi.auth2.getAuthInstance().currentUser.get().dt);
+      setIsLoadingGoogleDriveApi(false);
+      // list files if user is authenticated
+      listFiles();
+    } else {
+      // prompt user to sign in
+      handleAuthClick();
     }
-  }
-  signInFunction = async () =>{
-    await this.state.googleAuth.signIn()
-    this.updateSigninStatus()
-    history.push("/editor")
-  }
-  signOutFunction = async ()=>{
-    await this.state.googleAuth.signOut();
-    window.localStorage.clear();
-    this.setState({
-      name: ''
-    });
-  }
-  updateSigninStatus = ()=> {
-    this.setSigninStatus();
-  }
-  setSigninStatus= async ()=>{
-    var user = this.state.googleAuth.currentUser.get().dt;
-    this.setState({
-        name: user.Ot,
-      });
-      
-  } 
-  handleClientLoad = ()=>{
-    window.gapi.load('client:auth2', this.initClient);
-  }
- 
-  render() {
-    return (
-      <div className="App">
-        <div>UserName: <strong>{ this.state.name}</strong></div>
-        <button id="signin-btn" onClick= {this.signInFunction}>Sign In</button>
-        <button id="signout-btn" onClick={this.signOutFunction}>Sign Out</button>
-      </div>
-    );
-  }
-}
+  };
+
+  /**
+   *  Sign out the user upon button click.
+   */
+  const handleSignOutClick = (event) => {
+    setListDocumentsVisibility(false);
+    gapi.auth2.getAuthInstance().signOut();
+  };
+
+  /**
+   *  Initializes the API client library and sets up sign-in state
+   *  listeners.
+   */
+  const initClient = () => {
+    setIsLoadingGoogleDriveApi(true);
+    gapi.client
+      .init({
+        apiKey: API_KEY,
+        clientId: CLIENT_ID,
+        discoveryDocs: DISCOVERY_DOCS,
+        scope: SCOPES,
+      })
+      .then(
+        function () {
+          // Listen for sign-in state changes.
+          gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+
+          // Handle the initial sign-in state.
+          updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+        },
+        function (error) {}
+      );
+  };
+
+  const handleClientLoad = () => {
+    gapi.load('client:auth2', initClient);
+  };
+
+  const showDocuments = () => {
+    setListDocumentsVisibility(true);
+  };
+
+  const onClose = () => {
+    setListDocumentsVisibility(false);
+  };
+
+  const divStyle={
+    overflowY: 'scroll',
+    border:'1px solid red',
+    width:'100%',
+    float: 'center',
+    position:'relative'
+  };
+
+  return (
+    <div style={divStyle}>
+      <Row gutter={16} className="custom-row" >
+        <ListDocuments
+          visible={listDocumentsVisible}
+          onClose={onClose}
+          documents={documents}
+          onSearch={listFiles}
+          signedInUser={signedInUser}
+          onSignOut={handleSignOutClick}
+          isLoading={isFetchingGoogleDriveFiles}
+        />
+        <Col span={8}>
+          <Spin spinning={isLoadingGoogleDriveApi} style={{ width: '100%' }}>
+            <div onClick={() => handleClientLoad()} className="source-container">
+              <div className="icon-container">
+                <div className="icon icon-success">
+                  <img src={GoogleDriveImage} />
+                </div>
+              </div>
+            </div>
+          </Spin>
+        </Col>
+      </Row>
+    </div>
+  );
+};
+
+export default Login;

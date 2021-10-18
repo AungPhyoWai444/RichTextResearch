@@ -5,11 +5,11 @@ import './RichEditor.css'
 import createEmojiPlugin from '@draft-js-plugins/emoji';
 import '@draft-js-plugins/emoji/lib/plugin.css';
 import createToolbarPlugin from '@draft-js-plugins/static-toolbar';
-import DropZone from './dropzone/drop-zone.js';
+import DropZone from '../dropzone/drop-zone';
 //For Inline styles 
 import '@draft-js-plugins/static-toolbar/lib/plugin.css'
 
-  import {
+import {
     ItalicButton,
     BoldButton,
     UnderlineButton,
@@ -29,11 +29,12 @@ import '@draft-js-plugins/static-toolbar/lib/plugin.css'
     
   } from '@draft-js-plugins/buttons';
   // drag N drop
-  import createImagePlugin from '@draft-js-plugins/image';
+import createImagePlugin from '@draft-js-plugins/image';
 
-  import createFocusPlugin from '@draft-js-plugins/focus';  
-  import createBlockDndPlugin from '@draft-js-plugins/drag-n-drop';
+import createFocusPlugin from '@draft-js-plugins/focus';  
+import createBlockDndPlugin from '@draft-js-plugins/drag-n-drop';
 import { file } from "@babel/types";
+
 var oldEditorState;
 var newEditorState;
 var storage = window.localStorage;
@@ -53,11 +54,8 @@ const decorator = composeDecorators(
 const plugins = [staticToolbarPlugin,emojiPlugin,imagePlugin,blockDndPlugin, focusPlugin];
 
 export default class RichEditorExample extends React.Component {
- 
     constructor(props) {
         super(props);
-        //this.state = { showNote: storage.getItem('noteData') != null ? true : false };
-
         const noteData = storage.getItem('noteData');
         console.log( 'noteData:'+noteData);
         if (noteData) {
@@ -86,15 +84,64 @@ export default class RichEditorExample extends React.Component {
         this.toggleBlockType = this._toggleBlockType.bind(this);
         this.toggleInlineStyle = this._toggleInlineStyle.bind(this);
     }
+
     handleDrop = (files) => {
         let fileList = this.state.files
+        debugger;
         for (var i = 0; i < files.length; i++) {
           if (!files[i].name) return
           fileList.push(files[i].name)
           console.log('getting file::::'+files);
+          var convertedFile = this.getBase64(files[i]);
+          this.uploadFile(convertedFile,files[i]);
         }
+    
         this.setState({files: fileList})
+        
       }
+      getBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = error => reject(error);
+        });
+      }
+      uploadFile = (convertedFile,files) =>{
+        // const boundary='foo_bar_baz'
+        debugger;
+        const boundary = '-------314159265358979323846';
+        const delimiter = "--" + boundary + "rn";
+        const close_delim = "rn--" + boundary + "--";
+        var fileName=files.name;
+        //var fileData='this is a sample data';
+        var contentType= files.type;
+        debugger;
+        var metadata = {
+          'name': fileName,
+          'mimeType': contentType
+        };
+        var multipartRequestBody =
+        delimiter +  'Content-Type: application/jsonrnrn' +
+        JSON.stringify(metadata) +"rn" +
+        delimiter +
+        'Content-Type: ' + contentType + 'rn'+
+        'Content-Transfer-Encoding: base64rnrn' +convertedFile +
+        close_delim;;
+
+          console.log('multi request body::'+multipartRequestBody);
+          var request = window.gapi.client.request({
+            'path': 'https://www.googleapis.com/upload/drive/v3/files',
+            'method': 'POST',
+            'params': {'uploadType': 'multipart'},
+            'headers': {
+              'Content-Type': 'multipart/form-data; boundary=' + boundary 
+            },
+            'body': multipartRequestBody});
+        request.execute(function(file) {
+          console.log('file::'+file)
+        });
+  }
     _handleKeyCommand(command, editorState) {
         const newState = RichUtils.handleKeyCommand(editorState, command);
         if (newState) {
@@ -282,87 +329,3 @@ setInterval(function () {
         saveContent(newEditorState.getCurrentContent());
     }
 }, 3 * 1000);
-//Uncomment when use style button
-// class StyleButton extends React.Component {
-//     constructor() {
-//         super();
-//         this.onToggle = (e) => {
-//             e.preventDefault();
-//             this.props.onToggle(this.props.style);
-//         };
-//     }
-
-//     render() {
-//         let className = 'RichEditor-styleButton';
-//         if (this.props.active) {
-//             className += ' RichEditor-activeButton';
-//         }
-
-//         return (
-//             <span className={className} onMouseDown={this.onToggle}>
-//                 {this.props.label}
-//             </span>
-//         );
-//     }
-// }
-
-// const BLOCK_TYPES = [
-//     { label: 'H1', style: 'header-one' },
-//     { label: 'H2', style: 'header-two' },
-//     { label: 'H3', style: 'header-three' },
-//     { label: 'H4', style: 'header-four' },
-//     { label: 'H5', style: 'header-five' },
-//     { label: 'H6', style: 'header-six' },
-//     { label: 'Blockquote', style: 'blockquote' },
-//     { label: 'UL', style: 'unordered-list-item' },
-//     { label: 'OL', style: 'ordered-list-item' },
-//     { label: 'Code Block', style: 'code-block' },
-// ];
-// Uncomment when use block style 
-// const BlockStyleControls = (props) => {
-//     const { editorState } = props;
-//     const selection = editorState.getSelection();
-//     const blockType = editorState
-//         .getCurrentContent()
-//         .getBlockForKey(selection.getStartKey())
-//         .getType();
-
-//     return (
-//         <div className="RichEditor-controls">
-//             {BLOCK_TYPES.map((type) =>
-//                 <StyleButton
-//                     key={type.label}
-//                     active={type.style === blockType}
-//                     label={type.label}
-//                     onToggle={props.onToggle}
-//                     style={type.style}
-//                 />
-//             )}
-//         </div>
-//     );
-// };
-
-// var INLINE_STYLES = [
-//     { label: 'Bold', style: 'BOLD'},
-//     { label: 'Italic', style: 'ITALIC'},
-//     { label: 'Underline', style: 'UNDERLINE'},
-//     { label: 'Monospace', style: 'CODE' },
-// ];
-// Uncomment when use inline style 
-// const InlineStyleControls = (props) => {
-//     const currentStyle = props.editorState.getCurrentInlineStyle();
-
-//     return (
-//         <div className="RichEditor-controls">
-//             {INLINE_STYLES.map((type) =>
-//                 <StyleButton
-//                     key={type.label}
-//                     active={currentStyle.has(type.style)}
-//                     label={type.icon}
-//                     onToggle={props.onToggle}
-//                     style={type.style}
-//                 />
-//             )}
-//         </div>
-//     );
-// };

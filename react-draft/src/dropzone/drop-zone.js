@@ -31,6 +31,7 @@ state = {
     e.preventDefault()
     e.stopPropagation()
     this.setState({drag: false})
+    debugger;
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       this.props.handleDrop(e.dataTransfer.files)
     //  e.dataTransfer.clearData()
@@ -58,7 +59,7 @@ state = {
   render() {
     return (
       <div
-        style={{display: 'inline-block', position: 'relative'}}
+        style={{margin: 'auto 5rem', paddingTop: '2rem'}}
         ref={this.dropRef}
       >
         {this.state.dragging &&

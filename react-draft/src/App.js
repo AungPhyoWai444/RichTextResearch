@@ -7,7 +7,7 @@ import './css/App.css';
 //import FileList from "./fileList.js"
 
 import Login from "./login/login.js"
-import RichEditor from "./rich-text-editor";
+import RichEditor from "./note/rich-text-editor";
 import { BrowserRouter as Router, Route, Switch,} from "react-router-dom";
 
 function App() {
@@ -19,10 +19,6 @@ function App() {
         <Route exact path ="/editor" component = {RichEditor}/>
       </Switch>  
     </Router>
-    // <div className="App">
-    //   <Login />
-    // </div>
   );
 }
-
 export default App;
