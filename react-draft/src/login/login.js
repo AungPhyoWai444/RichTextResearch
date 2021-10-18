@@ -5,6 +5,7 @@ import { gapi } from 'gapi-script';
 import GoogleDriveImage from '../images/google-drive.png';
 import ListDocuments from '../ListDocuments';
 import { style } from './style';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 // Client ID and API key from the Developer Console
 const CLIENT_ID = "547330562057-i3ohfddt12lrmcq4dsljk6qmmcgt4t90.apps.googleusercontent.com";
@@ -120,31 +121,106 @@ const Login = () => {
     float: 'center',
     position:'relative'
   };
+  const finalSpaceCharacters = [
+    {
+      id: 'gary',
+      name: 'Gary Goodspeed',
+      thumb: '/images/gary.png'
+    },
+    {
+      id: 'cato',
+      name: 'Little Cato',
+      thumb: '/images/cato.png'
+    },
+    {
+      id: 'kvn',
+      name: 'KVN',
+      thumb: '/images/kvn.png'
+    },
+    {
+      id: 'mooncake',
+      name: 'Mooncake',
+      thumb: '/images/mooncake.png'
+    },
+    {
+      id: 'quinn',
+      name: 'Quinn Ergon',
+      thumb: '/images/quinn.png'
+    }
+  ]
+  const [characters, updateCharacters] = useState(finalSpaceCharacters);
+  function handleOnDragEnd(result) {
+    if (!result.destination) return;
 
+    const items = Array.from(characters);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    updateCharacters(items);
+  }
   return (
     <div style={divStyle}>
       <Row gutter={16} className="custom-row" >
-        <ListDocuments
-          visible={listDocumentsVisible}
-          onClose={onClose}
-          documents={documents}
-          onSearch={listFiles}
-          signedInUser={signedInUser}
-          onSignOut={handleSignOutClick}
-          isLoading={isFetchingGoogleDriveFiles}
-        />
         <Col span={8}>
-          <Spin spinning={isLoadingGoogleDriveApi} style={{ width: '100%' }}>
+          <Spin spinning={isLoadingGoogleDriveApi} style={{ width: '50%' ,height:'20%'}}>
             <div onClick={() => handleClientLoad()} className="source-container">
               <div className="icon-container">
                 <div className="icon icon-success">
-                  <img src={GoogleDriveImage} />
+                  <img src={GoogleDriveImage} width="200" height="200"/>
                 </div>
               </div>
             </div>
           </Spin>
         </Col>
       </Row>
+      {/* <DragDropContext onDragEnd={handleOnDragEnd}>
+
+          <Droppable droppableId="characters">
+            {(provided) => (
+              <ul className="characters" {...provided.droppableProps} ref={provided.innerRef}>
+                {documents.map(({id, name, thumb}, index) => {
+                  return (
+                    <Draggable key={id} draggableId={id} index={index}>
+                      {(provided) => (
+                        <li ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                          <div className="characters-thumb">
+                            <img src={thumb} alt={`${name} Thumb`} />
+                          </div>
+                          <p>
+                            { name }
+                          </p>
+                        </li>
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {provided.placeholder}
+              </ul>
+              // <Draggable key={id} draggableId={id} index={index}>
+              //   {(provided)=>(
+              //       <ListDocuments className="characters"
+              //       visible={listDocumentsVisible}
+              //       onClose={onClose}
+              //       documents={documents}
+              //       onSearch={listFiles}
+              //       signedInUser={signedInUser}
+              //       onSignOut={handleSignOutClick}
+              //       isLoading={isFetchingGoogleDriveFiles}
+              //     />
+              //   )}
+              // </Draggable>
+            )}
+          </Droppable>
+        </DragDropContext> */}
+         <ListDocuments className="characters"
+                    visible={listDocumentsVisible}
+                    onClose={onClose}
+                    documents={documents}
+                    onSearch={listFiles}
+                    signedInUser={signedInUser}
+                    onSignOut={handleSignOutClick}
+                    isLoading={isFetchingGoogleDriveFiles}
+                  />
     </div>
   );
 };

@@ -64,6 +64,33 @@ export default class RichEditorExample extends React.Component {
                 showNote: noteData != null ? true : false,
                 files: [
                     'hello.doc'
+                  ],
+                finalSpaceCharacters : [
+                    {
+                      id: 'gary',
+                      name: 'Gary Goodspeed',
+                      thumb: '/images/gary.png'
+                    },
+                    {
+                      id: 'cato',
+                      name: 'Little Cato',
+                      thumb: '/images/cato.png'
+                    },
+                    {
+                      id: 'kvn',
+                      name: 'KVN',
+                      thumb: '/images/kvn.png'
+                    },
+                    {
+                      id: 'mooncake',
+                      name: 'Mooncake',
+                      thumb: '/images/mooncake.png'
+                    },
+                    {
+                      id: 'quinn',
+                      name: 'Quinn Ergon',
+                      thumb: '/images/quinn.png'
+                    }
                   ]
             };
            
@@ -71,6 +98,33 @@ export default class RichEditorExample extends React.Component {
             this.state = { editorState: EditorState.createEmpty(), showNote: noteData != null ? true : false,
                 files: [
                     'hello.doc'
+                  ],
+                  finalSpaceCharacters : [
+                    {
+                      id: 'gary',
+                      name: 'Gary Goodspeed',
+                      thumb: '/images/gary.png'
+                    },
+                    {
+                      id: 'cato',
+                      name: 'Little Cato',
+                      thumb: '/images/cato.png'
+                    },
+                    {
+                      id: 'kvn',
+                      name: 'KVN',
+                      thumb: '/images/kvn.png'
+                    },
+                    {
+                      id: 'mooncake',
+                      name: 'Mooncake',
+                      thumb: '/images/mooncake.png'
+                    },
+                    {
+                      id: 'quinn',
+                      name: 'Quinn Ergon',
+                      thumb: '/images/quinn.png'
+                    }
                   ]};
         }
         console.log('state noteData:'+this.state);
@@ -191,6 +245,19 @@ export default class RichEditorExample extends React.Component {
         });
     }
 
+  
+    //   const [characters, updateCharacters] = useState(finalSpaceCharacters);
+    //   handleOnDragEnd(result) {
+    //     if (!result.destination) return;
+    
+    //     const items = Array.from();
+    //     const [reorderedItem] = items.splice(result.source.index, 1);
+    //     items.splice(result.destination.index, 0, reorderedItem);
+    
+    //     this.setState({
+    //         finalSpaceCharacters: items
+    //     });
+    //   }
     render() {
         const { editorState } = this.state;
         console.log('editor state:'+editorState);

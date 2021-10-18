@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import moment from 'moment';
 import { debounce } from 'lodash';
 import RichEditorExample from '../note/rich-text-editor';
-
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Col, Drawer, Row, Button, Input, Table, Tooltip } from 'antd';
 const { Search } = Input;
 
@@ -42,7 +42,15 @@ const ListDocuments = ({ visible, onClose, documents = [], onSearch, signedInUse
     debounce((q) => onSearch(q), 500),
     []
   );
+  function handleOnDragEnd(result) {
+    if (!result.destination) return;
 
+    const items = Array.from(documents);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+ //   updateCharacters(items);
+  }
   return (
     <Drawer
       title="Select Google Drive Document"
@@ -75,13 +83,52 @@ const ListDocuments = ({ visible, onClose, documents = [], onSearch, signedInUse
               />
             </div>
           </div>
-          <Table
+          {/* <DragDropContext onDragEnd={handleOnDragEnd}>
+          <Draggable>  */}
+            <Table
             className="table-striped-rows"
             columns={columns}
             dataSource={documents}
             pagination={{ simple: true }}
             loading={isLoading}
           />
+         {/* </Draggable> </DragDropContext> */}
+          <DragDropContext onDragEnd={handleOnDragEnd}>
+          <Droppable droppableId="documents">
+            {(provided) => (
+              <ul className="documents" {...provided.droppableProps} ref={provided.innerRef}>
+                {documents.map(({id, name, thumb}, index) => {
+                  return (
+                    <Draggable key={id} draggableId={id} index={index}>
+                      {(provided) => (
+                        <li ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                         
+                          <p>
+                            { name }
+                          </p>
+                        </li>
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {provided.placeholder}
+              </ul>
+              // <Draggable key={id} draggableId={id} index={index}>
+              //   {(provided)=>(
+              //       <ListDocuments className="characters"
+              //       visible={listDocumentsVisible}
+              //       onClose={onClose}
+              //       documents={documents}
+              //       onSearch={listFiles}
+              //       signedInUser={signedInUser}
+              //       onSignOut={handleSignOutClick}
+              //       isLoading={isFetchingGoogleDriveFiles}
+              //     />
+              //   )}
+              // </Draggable>
+            )}
+          </Droppable>
+        </DragDropContext>
         </Col>
       </Row>
     </Drawer>
