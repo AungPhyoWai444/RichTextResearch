@@ -93,7 +93,8 @@ export default class RichEditorExample extends React.Component {
           fileList.push(files[i].name)
           console.log('getting file::::'+files);
           var convertedFile = this.getBase64(files[i]);
-          this.uploadFile(convertedFile,files[i]);
+          //this.uploadFile(convertedFile,files[i]);
+          this.uploadFile(files[i])
         }
     
         this.setState({files: fileList})
@@ -107,41 +108,26 @@ export default class RichEditorExample extends React.Component {
           reader.onerror = error => reject(error);
         });
       }
-      uploadFile = (convertedFile,files) =>{
-        // const boundary='foo_bar_baz'
-        debugger;
-        const boundary = '-------314159265358979323846';
-        const delimiter = "--" + boundary + "rn";
-        const close_delim = "rn--" + boundary + "--";
-        var fileName=files.name;
-        //var fileData='this is a sample data';
-        var contentType= files.type;
-        debugger;
+      uploadFile = (file)=>{
         var metadata = {
-          'name': fileName,
-          'mimeType': contentType
+            name: file.name,
+            mimeType: file.type,
+           // Please set folderId here.
         };
-        var multipartRequestBody =
-        delimiter +  'Content-Type: application/jsonrnrn' +
-        JSON.stringify(metadata) +"rn" +
-        delimiter +
-        'Content-Type: ' + contentType + 'rn'+
-        'Content-Transfer-Encoding: base64rnrn' +convertedFile +
-        close_delim;;
-
-          console.log('multi request body::'+multipartRequestBody);
-          var request = window.gapi.client.request({
-            'path': 'https://www.googleapis.com/upload/drive/v3/files',
-            'method': 'POST',
-            'params': {'uploadType': 'multipart'},
-            'headers': {
-              'Content-Type': 'multipart/form-data; boundary=' + boundary 
-            },
-            'body': multipartRequestBody});
-        request.execute(function(file) {
-          console.log('file::'+file)
+        var form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+        form.append('file', file);
+        fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+          method: 'POST',
+          headers: new Headers({'Authorization': 'Bearer ' + window.gapi.auth.getToken().access_token}),
+          body: form
+        }).then((res) => {
+          return res.json();
+        }).then(function(val) {
+          console.log(val);
         });
-  }
+      }
+      
     _handleKeyCommand(command, editorState) {
         const newState = RichUtils.handleKeyCommand(editorState, command);
         if (newState) {
