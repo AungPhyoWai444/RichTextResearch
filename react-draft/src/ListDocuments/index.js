@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import moment from 'moment';
 import { debounce } from 'lodash';
-import RichEditorExample from '../note/rich-text-editor';
+import RichEditorExample from '../note/rich-text-editor.js';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Col, Drawer, Row, Button, Input, Table, Tooltip } from 'antd';
 const { Search } = Input;
@@ -61,7 +61,7 @@ const ListDocuments = ({ visible, onClose, documents = [], onSearch, signedInUse
       width={900}
     >
       <Row>
-        <RichEditorExample />
+      <RichEditorExample  documents ={documents}/>
       </Row>
       <Row gutter={16}>
         <Col span={24}>
@@ -93,7 +93,7 @@ const ListDocuments = ({ visible, onClose, documents = [], onSearch, signedInUse
             loading={isLoading}
           />
          {/* </Draggable> </DragDropContext> */}
-          <DragDropContext onDragEnd={handleOnDragEnd}>
+          {/* <DragDropContext onDragEnd={handleOnDragEnd}>
           <Droppable droppableId="documents">
             {(provided) => (
               <ul className="documents" {...provided.droppableProps} ref={provided.innerRef}>
@@ -113,22 +113,9 @@ const ListDocuments = ({ visible, onClose, documents = [], onSearch, signedInUse
                 })}
                 {provided.placeholder}
               </ul>
-              // <Draggable key={id} draggableId={id} index={index}>
-              //   {(provided)=>(
-              //       <ListDocuments className="characters"
-              //       visible={listDocumentsVisible}
-              //       onClose={onClose}
-              //       documents={documents}
-              //       onSearch={listFiles}
-              //       signedInUser={signedInUser}
-              //       onSignOut={handleSignOutClick}
-              //       isLoading={isFetchingGoogleDriveFiles}
-              //     />
-              //   )}
-              // </Draggable>
             )}
           </Droppable>
-        </DragDropContext>
+        </DragDropContext> */}
         </Col>
       </Row>
     </Drawer>

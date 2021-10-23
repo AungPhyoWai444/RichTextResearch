@@ -1,7 +1,8 @@
-import React from "react";
-import { EditorState, RichUtils, getDefaultKeyBinding, convertToRaw, convertFromRaw } from 'draft-js';
+import React, { useCallback } from "react";
+import { EditorState, RichUtils, getDefaultKeyBinding, convertToRaw, convertFromRaw,Modifier} from 'draft-js';
 import Editor, { composeDecorators }from '@draft-js-plugins/editor';
 import './RichEditor.css'
+import '../css/App.css'
 import createEmojiPlugin from '@draft-js-plugins/emoji';
 import '@draft-js-plugins/emoji/lib/plugin.css';
 import createToolbarPlugin from '@draft-js-plugins/static-toolbar';
@@ -30,10 +31,24 @@ import {
   } from '@draft-js-plugins/buttons';
   // drag N drop
 import createImagePlugin from '@draft-js-plugins/image';
-
+import { gapi } from 'gapi-script';
 import createFocusPlugin from '@draft-js-plugins/focus';  
 import createBlockDndPlugin from '@draft-js-plugins/drag-n-drop';
 import { file } from "@babel/types";
+import { Col, Drawer, Row, Button, Input, Table, Tooltip, Spin } from 'antd';
+import moment from 'moment';
+import { debounce } from 'lodash';
+import GoogleDriveImage from '../images/google-drive.png';
+const { Search } = Input;
+
+const CLIENT_ID = "547330562057-i3ohfddt12lrmcq4dsljk6qmmcgt4t90.apps.googleusercontent.com";
+const API_KEY = "AIzaSyDo9MQj6u3Eftj5Acd9QoY_1BieZDRZ0O8";
+// Array of API discovery doc URLs for APIs
+const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
+
+// Authorization scopes required by the API; multiple scopes can be
+// included, separated by spaces.
+const SCOPES ='https://www.googleapis.com/auth/drive.metadata.readonly';
 
 var oldEditorState;
 var newEditorState;
@@ -50,82 +65,40 @@ const decorator = composeDecorators(
     focusPlugin.decorator,
     blockDndPlugin.decorator
   );
-  const imagePlugin = createImagePlugin({ decorator });
+const imagePlugin = createImagePlugin({ decorator });
 const plugins = [staticToolbarPlugin,emojiPlugin,imagePlugin,blockDndPlugin, focusPlugin];
-
+ 
 export default class RichEditorExample extends React.Component {
     constructor(props) {
         super(props);
-        const noteData = storage.getItem('noteData');
+        this.state ={
+          documents: [],
+          listDocumentsVisible : false,
+          setListDocumentsVisibility : false,
+          setDocuments :[],
+          isLoadingGoogleDriveApi : true,
+          isFetchingGoogleDriveFiles : false,
+          signedInUser : null,
+          setIsLoadingGoogleDriveApi : false,
+          setIsFetchingGoogleDriveFiles : false,
+          setSignedInUser : null,
+          editorState: null,
+          showNote: false,
+          tasks: [
+            {name:"Google File1",category:"wip", bgcolor: "yellow"},
+            {name:"Google Sheet", category:"wip", bgcolor:"pink"},
+            {name:"Google Ppt", category:"complete", bgcolor:"skyblue"}
+          ]
+        };
+       //this.delta = this.delta.bind(this) 
+       const noteData = storage.getItem('noteData');
         console.log( 'noteData:'+noteData);
         if (noteData) {
-            this.state = {
-                editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(noteData))),
-                showNote: noteData != null ? true : false,
-                files: [
-                    'hello.doc'
-                  ],
-                finalSpaceCharacters : [
-                    {
-                      id: 'gary',
-                      name: 'Gary Goodspeed',
-                      thumb: '/images/gary.png'
-                    },
-                    {
-                      id: 'cato',
-                      name: 'Little Cato',
-                      thumb: '/images/cato.png'
-                    },
-                    {
-                      id: 'kvn',
-                      name: 'KVN',
-                      thumb: '/images/kvn.png'
-                    },
-                    {
-                      id: 'mooncake',
-                      name: 'Mooncake',
-                      thumb: '/images/mooncake.png'
-                    },
-                    {
-                      id: 'quinn',
-                      name: 'Quinn Ergon',
-                      thumb: '/images/quinn.png'
-                    }
-                  ]
-            };
-           
+            this.state.editorState = EditorState.createWithContent(convertFromRaw(JSON.parse(noteData)));
+            this.state.showNote = noteData != null ? true : false; 
         } else {
-            this.state = { editorState: EditorState.createEmpty(), showNote: noteData != null ? true : false,
-                files: [
-                    'hello.doc'
-                  ],
-                  finalSpaceCharacters : [
-                    {
-                      id: 'gary',
-                      name: 'Gary Goodspeed',
-                      thumb: '/images/gary.png'
-                    },
-                    {
-                      id: 'cato',
-                      name: 'Little Cato',
-                      thumb: '/images/cato.png'
-                    },
-                    {
-                      id: 'kvn',
-                      name: 'KVN',
-                      thumb: '/images/kvn.png'
-                    },
-                    {
-                      id: 'mooncake',
-                      name: 'Mooncake',
-                      thumb: '/images/mooncake.png'
-                    },
-                    {
-                      id: 'quinn',
-                      name: 'Quinn Ergon',
-                      thumb: '/images/quinn.png'
-                    }
-                  ]};
+            this.state.editorState = EditorState.createEmpty();
+            this.state.showNote = noteData != null ? true : false;
         }
         console.log('state noteData:'+this.state);
         oldEditorState = newEditorState = this.state.editorState;
@@ -139,9 +112,95 @@ export default class RichEditorExample extends React.Component {
         this.toggleInlineStyle = this._toggleInlineStyle.bind(this);
     }
 
+    handleClientLoad = () => {
+        gapi.load('client:auth2', this.initClient);
+      };
+    
+    initClient = () => {
+        var updateStatus = this;
+        this.state.isLoadingGoogleDriveApi = true;
+      gapi.client
+        .init({
+          apiKey: API_KEY,
+          clientId: CLIENT_ID,
+          discoveryDocs: DISCOVERY_DOCS,
+          scope: SCOPES,
+        })
+        .then(
+          function () {
+            // Listen for sign-in state changes.
+            gapi.auth2.getAuthInstance().isSignedIn.listen(updateStatus.updateSigninStatus);
+  
+            // Handle the initial sign-in state.
+            updateStatus.updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+          },
+          function (error) {}
+        );
+    };
+  
+    handleAuthClick = (event) => {
+      this.gapi.auth2.getAuthInstance().signIn();
+    };
+    handleSignOutClick = (event) => {
+      this.state.listDocumentsVisible = false;
+      this.gapi.auth2.getAuthInstance().signOut();
+    };
+    listFiles = (searchTerm = null) => {
+      this.state.isFetchingGoogleDriveFiles = true;
+      var state = this.state;
+      gapi.client.drive.files
+        .list({
+          pageSize: 50,
+          fields: 'nextPageToken, files(id, name, mimeType, modifiedTime)',
+          q: searchTerm,
+        })
+        .then(function (response) {
+          state.isFetchingGoogleDriveFiles =false;
+          state.listDocumentsVisible = true;
+          const res = JSON.parse(response.body);
+          state.documents = res.files; 
+     
+          state.tasks = [
+                {name:res.files[0].name,category:"wip", bgcolor: "yellow"},
+                {name:res.files[1].name, category:"wip", bgcolor:"pink"},
+                {name:res.files[2].name, category:"complete", bgcolor:"skyblue"}
+          ];
+       
+          var tasks = {
+            wip: [],
+            complete: []
+        }
+          state.tasks.forEach ((t) => {
+           tasks[t.category].push(
+                  <div key={t.name} 
+                      onDragStart = {(e) => this.onDragStart(e, t)}
+                      draggable
+                      className="draggable"
+                      style = {{backgroundColor: t.bgcolor}}
+                  >
+                      {t.name}
+                  </div>
+                   
+              );
+          });
+    console.log("new State::"+state.tasks.length);    
+         });
+    }
+    
+    updateSigninStatus = (isSignedIn) => {
+      if (isSignedIn) {
+        // Set the signed in user
+        this.state.signedInUser = gapi.auth2.getAuthInstance().currentUser.get().dt;
+        this.state.isLoadingGoogleDriveApi = false;
+        // list files if user is authenticated
+        this.listFiles();
+      } else {
+        // prompt user to sign in
+        this.handleAuthClick();
+      }
+    };
     handleDrop = (files) => {
         let fileList = this.state.files
-        debugger;
         for (var i = 0; i < files.length; i++) {
           if (!files[i].name) return
           fileList.push(files[i].name)
@@ -244,21 +303,65 @@ export default class RichEditorExample extends React.Component {
             showNote: true
         });
     }
+    onDragStart = (ev, id) => {
+      console.log('dragstart:',id);
+      ev.dataTransfer.setData("id", id);
+      this.setState({editorState: this.insertText(id.name, this.state.editorState)});
+      console.log('Editor state:'+this.state.editorState.noteData)
+  }
 
-  
-    //   const [characters, updateCharacters] = useState(finalSpaceCharacters);
-    //   handleOnDragEnd(result) {
-    //     if (!result.destination) return;
+  onDragOver = (ev) => {
+      ev.preventDefault();
+  }
+  insertText = (text, editorState) => {
+    const currentContent = editorState.getCurrentContent(),
+          currentSelection = editorState.getSelection();
+
+    const newContent = Modifier.replaceText(
+      currentContent,
+      currentSelection,
+      text
+    );
+
+    const newEditorState = EditorState.push(editorState, newContent, 'insert-characters');
+    return  EditorState.forceSelection(newEditorState, newContent.getSelectionAfter());
+  }
+
+  onDrop = (ev, cat) => {
+     let id = ev.dataTransfer.getData("id");
+     debugger;
+     let tasks = this.state.tasks.filter((task) => {
+         if (task.name == id) {
+             task.category = cat;
+         }
+         return task;
+     });
+
+     this.setState({
+         ...this.state,
+         tasks
+     });
+  }
+  render() {         
     
-    //     const items = Array.from();
-    //     const [reorderedItem] = items.splice(result.source.index, 1);
-    //     items.splice(result.destination.index, 0, reorderedItem);
-    
-    //     this.setState({
-    //         finalSpaceCharacters: items
-    //     });
-    //   }
-    render() {
+    var tasks = {
+      wip: [],
+      complete: []
+  }
+
+  this.state.tasks.forEach ((t) => {
+      tasks[t.category].push(
+          <div key={t.name} 
+              onDragStart = {(e) => this.onDragStart(e, t)}
+              draggable
+              className="draggable"
+              style = {{backgroundColor: t.bgcolor}}
+          >
+              {t.name}
+          </div>
+      );
+  });
+
         const { editorState } = this.state;
         console.log('editor state:'+editorState);
         // If the user changes block type before entering any text, we can
@@ -279,8 +382,15 @@ export default class RichEditorExample extends React.Component {
                         <button onClick={() => this.onCreate()}>Create Note</button>}
 
                 </div>
-                
-                        
+                <Spin spinning={this.state.isLoadingGoogleDriveApi} style={{ width: '50%' ,height:'20%'}}>
+                <div onClick={() => this.handleClientLoad()} className="source-container">
+              <div className="icon-container">
+                <div className="icon icon-success">
+                  <img src={GoogleDriveImage} width="200" height="200"/>
+                </div>
+              </div>
+            </div>
+            </Spin>            
                 {this.state.showNote &&
                     (
                         <div className="RichEditor-root">  
@@ -327,19 +437,36 @@ export default class RichEditorExample extends React.Component {
                                       }}
                                     spellCheck={true}
                                     plugins = {plugins}
-                            /></div>
-                            
-                            
+                            />
+                            </div>
+
                             <EmojiSuggestions />
                           
                             </div>
                         </div>)}
-                        <div style={{height: 300, width: 250}}>
-                            {this.state.files.map((file) =>
-                                <div key={file}>{file}</div>
-                            )}
-                            
-                            </div>
+
+               {/* <div>
+               <ul>
+               {this.state.tasks.map((user)=><p> {user.name}</p>)}
+              </ul>
+               </div>          */}
+               <div>UserName: <strong>{ this.state.name}</strong></div>
+               <div className="container-drag">
+                <div className="wip"
+                    onDragOver={(e)=>this.onDragOver(e)}
+                    onDrop={(e)=>{this.onDrop(e, "wip")}}>
+                    <span className="task-header">WIP</span>
+                    {tasks.wip}
+                </div>
+                <div className="droppable" 
+                    onDragOver={(e)=>this.onDragOver(e)}
+                    onDrop={(e)=>this.onDrop(e, "complete")}>
+                     <span className="task-header">COMPLETED</span>
+                     {tasks.complete}
+                </div>
+
+
+            </div>
                 <div>
                     {this.state.showNote &&
                         (<button onClick={() => this.onDelete()}>Delete Note</button>)}

@@ -6,6 +6,7 @@ import GoogleDriveImage from '../images/google-drive.png';
 import ListDocuments from '../ListDocuments';
 import { style } from './style';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import RichEditorExample  from '../note/rich-text-editor';
 
 // Client ID and API key from the Developer Console
 const CLIENT_ID = "547330562057-i3ohfddt12lrmcq4dsljk6qmmcgt4t90.apps.googleusercontent.com";
@@ -173,46 +174,8 @@ const Login = () => {
           </Spin>
         </Col>
       </Row>
-      {/* <DragDropContext onDragEnd={handleOnDragEnd}>
 
-          <Droppable droppableId="characters">
-            {(provided) => (
-              <ul className="characters" {...provided.droppableProps} ref={provided.innerRef}>
-                {documents.map(({id, name, thumb}, index) => {
-                  return (
-                    <Draggable key={id} draggableId={id} index={index}>
-                      {(provided) => (
-                        <li ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                          <div className="characters-thumb">
-                            <img src={thumb} alt={`${name} Thumb`} />
-                          </div>
-                          <p>
-                            { name }
-                          </p>
-                        </li>
-                      )}
-                    </Draggable>
-                  );
-                })}
-                {provided.placeholder}
-              </ul>
-              // <Draggable key={id} draggableId={id} index={index}>
-              //   {(provided)=>(
-              //       <ListDocuments className="characters"
-              //       visible={listDocumentsVisible}
-              //       onClose={onClose}
-              //       documents={documents}
-              //       onSearch={listFiles}
-              //       signedInUser={signedInUser}
-              //       onSignOut={handleSignOutClick}
-              //       isLoading={isFetchingGoogleDriveFiles}
-              //     />
-              //   )}
-              // </Draggable>
-            )}
-          </Droppable>
-        </DragDropContext> */}
-         <ListDocuments className="characters"
+         <RichEditorExample className="characters"
                     visible={listDocumentsVisible}
                     onClose={onClose}
                     documents={documents}
